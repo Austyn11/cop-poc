@@ -1,0 +1,13 @@
+// === RING HANDLE ===
+const ringOuterR = {{ ring_outer_r }};
+const ringInnerR = {{ ring_inner_r }};
+const ringWidth = {{ ring_width }};
+const ringAttachZ = {{ ring_attach_z }};
+const ringAttachX = {{ ring_attach_x }};
+
+let cupHandle = Cylinder(ringOuterR, ringWidth, true);
+let handleInnerHole = Cylinder(ringInnerR, ringWidth, true);
+cupHandle = Difference(cupHandle, [handleInnerHole], false);
+cupHandle = FilletEdges(cupHandle, 4, [0, 2, 4, 6], false);
+cupHandle = Rotate([1, 0, 0], 90, cupHandle, false);
+cupHandle = Translate([ringAttachX, 0, ringAttachZ], cupHandle);

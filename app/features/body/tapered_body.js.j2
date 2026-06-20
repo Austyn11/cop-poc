@@ -1,0 +1,30 @@
+// === TAPERED BODY ===
+const height = {{ height }};
+const outerBottomR = {{ outer_bottom_r }};
+const outerTopR = {{ outer_top_r }};
+const thickness = {{ thickness }};
+const innerBottomR = {{ inner_bottom_r }};
+const innerTopR = {{ inner_top_r }};
+const bottomThickness = {{ bottom_thickness }};
+
+let profile = new Sketch([0, 0, 0])
+  .LineTo([-outerBottomR, 0])
+  .LineTo([-outerTopR, height])
+  .LineTo([0, height])
+  .End(true)
+  .Face(true);
+
+let cupBody = Revolve(profile, 360, [0, 1, 0], false, false);
+cupBody = Rotate([1, 0, 0], 90, cupBody, false);
+
+let holeProfile = new Sketch([0, bottomThickness, 0])
+  .LineTo([-innerBottomR, bottomThickness])
+  .LineTo([-innerTopR, height + bottomThickness])
+  .LineTo([0, height + bottomThickness])
+  .End(true)
+  .Face(true);
+
+let cupHole = Revolve(holeProfile, 360, [0, 1, 0], false, false);
+cupHole = Rotate([1, 0, 0], 90, cupHole, false);
+
+cupBody = Difference(cupBody, [cupHole], false);

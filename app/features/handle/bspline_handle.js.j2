@@ -1,0 +1,37 @@
+// === BSPLINE HANDLE ===
+const sectionWidth = {{ section_width }};
+const sectionHeight = {{ section_height }};
+const lowerAttachZ = {{ lower_attach_z }};
+const upperAttachZ = {{ upper_attach_z }};
+const lowerAttachX = {{ lower_attach_x }};
+const upperAttachX = {{ upper_attach_x }};
+const handleSpanZ = {{ handle_span_z }};
+const handleOutwardDepth = {{ handle_outward_depth }};
+const handleMidZ = {{ handle_mid_z }};
+const handleMidOuterR = {{ handle_mid_outer_r }};
+
+const halfSectionWidth = sectionWidth / 2;
+const halfSectionHeight = sectionHeight / 2;
+
+let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
+  .LineTo([halfSectionWidth, -halfSectionHeight])
+  .LineTo([halfSectionWidth, halfSectionHeight])
+  .LineTo([-halfSectionWidth, halfSectionHeight])
+  .End(true)
+  .Face(true);
+
+handleSection = Rotate([0, 1, 0], 90, handleSection, false);
+handleSection = Translate([lowerAttachX, 0, lowerAttachZ], handleSection, false);
+
+const lowerControlZ = lowerAttachZ + handleSpanZ * 0.22;
+const upperControlZ = upperAttachZ - handleSpanZ * 0.03;
+
+let path = BSpline([
+  [lowerAttachX, 0, lowerAttachZ],
+  [lowerAttachX - handleOutwardDepth * 0.7, 0, lowerControlZ],
+  [-handleMidOuterR - handleOutwardDepth, 0, handleMidZ],
+  [upperAttachX - handleOutwardDepth * 0.7, 0, upperControlZ],
+  [upperAttachX, 0, upperAttachZ],
+]);
+
+let cupHandle = Pipe(handleSection, path);

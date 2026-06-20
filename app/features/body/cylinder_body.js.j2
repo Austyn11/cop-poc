@@ -1,0 +1,15 @@
+// === CYLINDER BODY ===
+const cylinderHeight = {{ cylinder_height }};
+const cylinderRadius = {{ cylinder_radius }};
+const cylinderThickness = {{ cylinder_thickness }};
+const cylinderInnerRadius = {{ cylinder_inner_radius }};
+const cylinderBottomThickness = {{ cylinder_bottom_thickness }};
+
+let cupBody = Cylinder(cylinderRadius, cylinderHeight);
+cupBody = FilletEdges(cupBody, 15, [2], false);
+
+let bodyInnerHole = Cylinder(cylinderInnerRadius, cylinderHeight - cylinderBottomThickness);
+bodyInnerHole = FilletEdges(bodyInnerHole, 12.5, [2], false);
+bodyInnerHole = Translate([0, 0, cylinderBottomThickness], bodyInnerHole);
+cupBody = Difference(cupBody, [bodyInnerHole], false);
+cupBody = FilletEdges(cupBody, 1, [2, 5], false);
