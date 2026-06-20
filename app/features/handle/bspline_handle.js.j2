@@ -27,8 +27,10 @@ const _ellipseEdge = new oc.BRepBuilderAPI_MakeEdge(_ellipse).Edge();
 const _ellipseWire = new oc.BRepBuilderAPI_MakeWire(_ellipseEdge).Wire();
 let handleSection = new oc.BRepBuilderAPI_MakeFace(_ellipseWire).Face();
 
-// XZ 평면으로 배치 (법선 +Y, 장축 X=14mm, 단축 Z=8mm)
-handleSection = Rotate([1, 0, 0], -90, handleSection, false);
+// 장축을 Z방향(= XY경로의 Frenet B방향)으로 정렬
+// Ry(90°): XZ 평면 안에서 회전 → 장축 X → Z (컵 높이 방향)
+// 최종 Rx(90°) 후: Z → -Y(수평 둘레 방향) → "가로로 붙음"
+handleSection = Rotate([0, 1, 0],  90, handleSection, false);
 handleSection = Translate([lowerAttachX, lowerAttachZ, 0], handleSection, false);
 
 // 경로: Z 좌표 → Y 좌표로 (XY 평면, Z=0)
@@ -43,3 +45,19 @@ let path = BSpline([
 let cupHandle = Pipe(handleSection, path);
 // Rx(90°): Y→Z, Z→-Y → 손잡이를 XY 평면에서 XZ 평면(컵 측면)으로 세움
 cupHandle = Rotate([1, 0, 0], 90, cupHandle, false);
+
+// 컵 외형 솔리드로 손잡이 트리밍 → 끝면이 컵 외벽 곡면과 일치
+// 이후 +X 방향으로 1mm 이동 → 컵 벽 안쪽으로 살짝 겹치게 해서 Union 안정화
+const _outerBottomR = {{ outer_bottom_r }};
+const _outerTopR = {{ outer_top_r }};
+const _cupHeight = {{ height }};
+let _outerProfile = new Sketch([0, 0, 0])
+  .LineTo([-_outerBottomR, 0])
+  .LineTo([-_outerTopR, _cupHeight])
+  .LineTo([0, _cupHeight])
+  .End(true)
+  .Face(true);
+let _cupOuter = Revolve(_outerProfile, 360, [0, 1, 0], false, false);
+_cupOuter = Rotate([1, 0, 0], 90, _cupOuter, false);
+cupHandle = Difference(cupHandle, [_cupOuter], false);
+cupHandle = Translate([1, 0, 0], cupHandle, false);

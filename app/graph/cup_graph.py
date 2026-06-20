@@ -8,7 +8,7 @@ from app.features.handle.ring_handle import RingHandle
 # ── 기본값 ────────────────────────────────────────────────────────────────────
 
 TAPERED_BODY_DEFAULTS: dict[str, float] = {
-    "height": 70.0,
+    "height": 90.0,
     "outer_top_r": 40.0,
     "outer_bottom_r": 29.0,
     "thickness": 3.0,
