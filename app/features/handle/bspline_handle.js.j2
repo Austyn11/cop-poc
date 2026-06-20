@@ -10,20 +10,24 @@ const handleOutwardDepth = {{ handle_outward_depth }};
 const handleMidZ = {{ handle_mid_z }};
 const handleMidOuterR = {{ handle_mid_outer_r }};
 
-const halfSectionWidth = sectionWidth / 2;
-const halfSectionHeight = sectionHeight / 2;
-// 원형 단면: 직선 변이 없으므로 Null Face 수학적으로 불가능
-const sectionRadius = halfSectionHeight;
+const halfSectionWidth = sectionWidth / 2;   // 장반경: X방향 (반경 방향)
+const halfSectionHeight = sectionHeight / 2;  // 단반경: Z방향 (컵 높이 방향)
 
 const lowerControlZ = lowerAttachZ + handleSpanZ * 0.22;
 const upperControlZ = upperAttachZ - handleSpanZ * 0.03;
 
-// 섹션: 원 (XY 평면, 법선 = +Z)
-let handleSection = new Sketch([0, 0, 0])
-  .Circle([0, 0], sectionRadius)
-  .Face();
+// 섹션: 타원 (직선 변 없음 → Null Face 수학적으로 불가능)
+// GC_MakeEllipse: 장반경 >= 단반경 필요
+const _ellipse = new oc.GC_MakeEllipse(
+  new oc.gp_Ax2(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(0, 0, 1)),
+  halfSectionWidth,   // 장반경 (X방향, 7mm)
+  halfSectionHeight   // 단반경 (Y방향 → Rx후 Z방향, 4mm)
+).Value();
+const _ellipseEdge = new oc.BRepBuilderAPI_MakeEdge(_ellipse).Edge();
+const _ellipseWire = new oc.BRepBuilderAPI_MakeWire(_ellipseEdge).Wire();
+let handleSection = new oc.BRepBuilderAPI_MakeFace(_ellipseWire).Face();
 
-// XZ 평면으로 배치 (원은 대칭이므로 회전 방향 무관)
+// XZ 평면으로 배치 (법선 +Y, 장축 X=14mm, 단축 Z=8mm)
 handleSection = Rotate([1, 0, 0], -90, handleSection, false);
 handleSection = Translate([lowerAttachX, lowerAttachZ, 0], handleSection, false);
 
