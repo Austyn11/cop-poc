@@ -12,33 +12,19 @@ const handleMidOuterR = {{ handle_mid_outer_r }};
 
 const halfSectionWidth = sectionWidth / 2;
 const halfSectionHeight = sectionHeight / 2;
+// 원형 단면: 직선 변이 없으므로 Null Face 수학적으로 불가능
+const sectionRadius = halfSectionHeight;
 
 const lowerControlZ = lowerAttachZ + handleSpanZ * 0.22;
 const upperControlZ = upperAttachZ - handleSpanZ * 0.03;
 
-let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
-  .LineTo([halfSectionWidth, -halfSectionHeight])
-  .LineTo([halfSectionWidth, halfSectionHeight])
-  .LineTo([-halfSectionWidth, halfSectionHeight])
-  .End(true)
-  .Face(true);
+// 섹션: 원 (XY 평면, 법선 = +Z)
+let handleSection = new Sketch([0, 0, 0])
+  .Circle([0, 0], sectionRadius)
+  .Face();
 
-// XY 평면 전략: 경로를 XY 평면에 그린 뒤 Rx(90°)로 XZ로 세움
-// → 경로 탄젠트가 항상 XY 내에 있어 Z방향 섹션 변과 절대 평행하지 않음
-// → Null Face 없음
-
-// 경로 첫 세그먼트 탄젠트: p1 - p0 = (-handleOutwardDepth*0.7, handleSpanZ*0.22, 0)
-// Rx(-90°) 후 섹션 법선 = +Y. Rz(θ)를 추가해 법선이 탄젠트를 향하도록 정렬.
-// Rz(θ): +Y → (-sinθ, cosθ, 0) = 탄젠트 방향  →  θ = atan2(dx, dy)
-const _tangentDX = handleOutwardDepth * 0.7;   // X 성분 (부호 반전 전)
-const _tangentDY = handleSpanZ * 0.22;          // Y 성분 (lowerControlZ - lowerAttachZ)
-const _sectionAngle = Math.atan2(_tangentDX, _tangentDY) * (180 / Math.PI);
-
-// 섹션: Rx(-90°)로 XZ 평면에 배치 (법선 = +Y, 높이 = Z방향)
+// XZ 평면으로 배치 (원은 대칭이므로 회전 방향 무관)
 handleSection = Rotate([1, 0, 0], -90, handleSection, false);
-// Rz(_sectionAngle): 법선을 경로 탄젠트 방향으로 정렬 (섹션 평면 ⊥ 경로 시작점)
-handleSection = Rotate([0, 0, 1], _sectionAngle, handleSection, false);
-// XY 경로의 시작점에 배치: (attachX, attachZ, 0)
 handleSection = Translate([lowerAttachX, lowerAttachZ, 0], handleSection, false);
 
 // 경로: Z 좌표 → Y 좌표로 (XY 평면, Z=0)
