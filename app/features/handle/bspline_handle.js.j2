@@ -13,12 +13,8 @@ const handleMidOuterR = {{ handle_mid_outer_r }};
 const halfSectionWidth = sectionWidth / 2;
 const halfSectionHeight = sectionHeight / 2;
 
-// 경로 초기 탄젠트 방향을 먼저 계산 (섹션 법선 정렬용)
 const lowerControlZ = lowerAttachZ + handleSpanZ * 0.22;
 const upperControlZ = upperAttachZ - handleSpanZ * 0.03;
-// 섹션 법선(XY 평면 → +Z)이 경로 초기 탄젠트에 정렬되도록 Y축 회전각 계산
-// Ry(θ) 후 법선 = (sin θ, 0, cos θ), 탄젠트 = (-outwardDepth*0.7, 0, span*0.22)
-const _sectionAngle = Math.atan2(-handleOutwardDepth * 0.7, handleSpanZ * 0.22) * 180 / Math.PI;
 
 let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
   .LineTo([halfSectionWidth, -halfSectionHeight])
@@ -27,7 +23,9 @@ let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
   .End(true)
   .Face(true);
 
-handleSection = Rotate([0, 1, 0], _sectionAngle, handleSection, false);
+// -90°: 섹션을 YZ 평면에 유지(Null Face 없음)하면서 법선을 -X 방향으로
+// → 경로 탄젠트(-X 우세)와 같은 방향 → 올바른 솔리드(inside-out 아님)
+handleSection = Rotate([0, 1, 0], -90, handleSection, false);
 handleSection = Translate([lowerAttachX, 0, lowerAttachZ], handleSection, false);
 
 let path = BSpline([
