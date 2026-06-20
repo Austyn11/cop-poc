@@ -1,3 +1,4 @@
+# app/llm/parser.py
 import json
 import os
 from openai import OpenAI
@@ -41,11 +42,8 @@ CRITICAL: "X으로/로 수정/변경/바꿔줘" is ALWAYS op:"set" even if X is 
 Post-process keywords: fillet/필렛/라운드/round → "fillet_edge"
 Use this intent ONLY when a selection context (Edge index) is provided.
 
-User-facing parameters:
-- Tapered body: height, outer_top_r, outer_bottom_r, thickness, bottom_thickness
-- Cylinder body: cylinder_height, cylinder_radius, cylinder_thickness, cylinder_bottom_thickness
-- BSpline handle: section_width, section_height, lower_attach_z, upper_attach_z, handle_outward_depth
-- Ring handle: ring_outer_r, ring_inner_r, ring_width, ring_attach_z
+The graph_context in each request lists all available parameters with their current
+values, constraints, and geometry relationships. Only modify nodes where user_facing is true.
 
 Creation keywords (any language): make, create, generate, new, 만들어, 생성, 새로운, 컵, 머그
 Body types: tapered/테이퍼드=tapered, cylinder/원통=cylinder (default: tapered)
@@ -56,11 +54,11 @@ Return ONLY the JSON object, no explanation."""
 
 def parse_command(
     command: str,
-    current_params: dict,
+    graph_context: dict,
     selection: dict | None = None,
 ) -> dict:
     """자연어 명령을 파싱하여 intent와 변경 사항을 반환."""
-    user_content = f"Current params: {json.dumps(current_params)}\n"
+    user_content = f"Current graph state:\n{json.dumps(graph_context, indent=2)}\n"
     if selection:
         user_content += f"Selection: {selection['type']} index {selection['index']}\n"
     user_content += f"\nCommand: {command}"
