@@ -23,31 +23,33 @@ let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
   .End(true)
   .Face(true);
 
-// Null Face 방지 원리:
-//   섹션을 XZ 주평면에 배치 (Rx(-90°)) + 경로를 XY 평면에 정의
-//
-//   섹션 변 방향  │ Null 조건        │ XY 경로에서 가능?
-//   ─────────────┼──────────────────┼──────────────────────────
-//   X방향 변     │ T_Y = 0 일 때   │ Y 단조증가 → T_Y > 0 항상 → 불가 ✓
-//   Z방향 변     │ T_Z ≠ 0 일 때   │ 경로 Z=0 → T_Z = 0 항상  → 불가 ✓
-//
-//   두 조건 모두 성립 불가 → Null Face 수학적으로 불가능
+// XY 평면 전략: 경로를 XY 평면에 그린 뒤 Rx(90°)로 XZ로 세움
+// → 경로 탄젠트가 항상 XY 내에 있어 Z방향 섹션 변과 절대 평행하지 않음
+// → Null Face 없음
 
-// 섹션: XZ 주평면 (Rx(-90°): 법선 +Y, 변 방향 = X·Z)
+// 경로 첫 세그먼트 탄젠트: p1 - p0 = (-handleOutwardDepth*0.7, handleSpanZ*0.22, 0)
+// Rx(-90°) 후 섹션 법선 = +Y. Rz(θ)를 추가해 법선이 탄젠트를 향하도록 정렬.
+// Rz(θ): +Y → (-sinθ, cosθ, 0) = 탄젠트 방향  →  θ = atan2(dx, dy)
+const _tangentDX = handleOutwardDepth * 0.7;   // X 성분 (부호 반전 전)
+const _tangentDY = handleSpanZ * 0.22;          // Y 성분 (lowerControlZ - lowerAttachZ)
+const _sectionAngle = Math.atan2(_tangentDX, _tangentDY) * (180 / Math.PI);
+
+// 섹션: Rx(-90°)로 XZ 평면에 배치 (법선 = +Y, 높이 = Z방향)
 handleSection = Rotate([1, 0, 0], -90, handleSection, false);
+// Rz(_sectionAngle): 법선을 경로 탄젠트 방향으로 정렬 (섹션 평면 ⊥ 경로 시작점)
+handleSection = Rotate([0, 0, 1], _sectionAngle, handleSection, false);
+// XY 경로의 시작점에 배치: (attachX, attachZ, 0)
 handleSection = Translate([lowerAttachX, lowerAttachZ, 0], handleSection, false);
 
-// 경로: XY 평면 (Z=0 고정 → T_Z=0 항상, Y 단조증가 → T_Y>0 항상)
+// 경로: Z 좌표 → Y 좌표로 (XY 평면, Z=0)
 let path = BSpline([
-  [lowerAttachX,                             lowerAttachZ, 0],
-  [lowerAttachX - handleOutwardDepth * 0.7,  lowerControlZ, 0],
-  [-handleMidOuterR - handleOutwardDepth,    handleMidZ,   0],
-  [upperAttachX - handleOutwardDepth * 0.7,  upperControlZ, 0],
-  [upperAttachX,                             upperAttachZ,  0],
+  [lowerAttachX,                                lowerAttachZ, 0],
+  [lowerAttachX - handleOutwardDepth * 0.7,    lowerControlZ, 0],
+  [-handleMidOuterR - handleOutwardDepth,       handleMidZ,    0],
+  [upperAttachX - handleOutwardDepth * 0.7,    upperControlZ, 0],
+  [upperAttachX,                                upperAttachZ,  0],
 ]);
 
-// Pipe: 섹션(XZ) × 경로(XY) → Null Face 없음
 let cupHandle = Pipe(handleSection, path);
-
-// 최종: Rx(90°)로 XY → XZ 변환 (컵 측면 조립)
+// Rx(90°): Y→Z, Z→-Y → 손잡이를 XY 평면에서 XZ 평면(컵 측면)으로 세움
 cupHandle = Rotate([1, 0, 0], 90, cupHandle, false);
