@@ -54,7 +54,7 @@ Return ONLY the JSON object, no explanation."""
 
 def parse_command(
     command: str,
-    graph_context: dict,
+    graph_context: dict[str, dict],
     selection: dict | None = None,
 ) -> dict:
     """자연어 명령을 파싱하여 intent와 변경 사항을 반환."""

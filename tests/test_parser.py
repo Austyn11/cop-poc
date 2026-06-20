@@ -128,3 +128,17 @@ def test_parse_op_missing_passes_through():
     change = result["changes"][0]
     assert "value" in change
     assert change["value"] == 90
+
+
+def test_user_message_format_includes_graph_state():
+    """graph_context가 'Current graph state:' 헤더와 함께 LLM에 전달되는지 확인."""
+    resp = '{"intent": "modify", "body_template": null, "handle_template": null, "changes": []}'
+    ctx = {"nodes": {"height": {"value": 70.0, "user_facing": True}}}
+    with patch(
+        "app.llm.parser.client.chat.completions.create"
+    ) as mock_create:
+        mock_create.return_value = _mock_response(resp)
+        parse_command("높이 90", ctx)
+    user_msg = mock_create.call_args[1]["messages"][1]["content"]
+    assert user_msg.startswith("Current graph state:\n")
+    assert '"height"' in user_msg
