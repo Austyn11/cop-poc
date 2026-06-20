@@ -23,17 +23,24 @@ let handleSection = new Sketch([-halfSectionWidth, -halfSectionHeight, 0])
   .End(true)
   .Face(true);
 
-// -90°: 섹션을 YZ 평면에 유지(Null Face 없음)하면서 법선을 -X 방향으로
-// → 경로 탄젠트(-X 우세)와 같은 방향 → 올바른 솔리드(inside-out 아님)
-handleSection = Rotate([0, 1, 0], -90, handleSection, false);
-handleSection = Translate([lowerAttachX, 0, lowerAttachZ], handleSection, false);
+// XY 평면 전략: 경로를 XY 평면에 그린 뒤 Rx(90°)로 XZ로 세움
+// → 경로 탄젠트가 항상 XY 내에 있어 Z방향 섹션 변과 절대 평행하지 않음
+// → Null Face 없음
 
+// 섹션: Rx(-90°)로 XZ 평면에 배치 (법선 = +Y, 높이 = Z방향)
+handleSection = Rotate([1, 0, 0], -90, handleSection, false);
+// XY 경로의 시작점에 배치: (attachX, attachZ, 0)
+handleSection = Translate([lowerAttachX, lowerAttachZ, 0], handleSection, false);
+
+// 경로: Z 좌표 → Y 좌표로 (XY 평면, Z=0)
 let path = BSpline([
-  [lowerAttachX, 0, lowerAttachZ],
-  [lowerAttachX - handleOutwardDepth * 0.7, 0, lowerControlZ],
-  [-handleMidOuterR - handleOutwardDepth, 0, handleMidZ],
-  [upperAttachX - handleOutwardDepth * 0.7, 0, upperControlZ],
-  [upperAttachX, 0, upperAttachZ],
+  [lowerAttachX,                                lowerAttachZ, 0],
+  [lowerAttachX - handleOutwardDepth * 0.7,    lowerControlZ, 0],
+  [-handleMidOuterR - handleOutwardDepth,       handleMidZ,    0],
+  [upperAttachX - handleOutwardDepth * 0.7,    upperControlZ, 0],
+  [upperAttachX,                                upperAttachZ,  0],
 ]);
 
 let cupHandle = Pipe(handleSection, path);
+// Rx(90°): Y→Z, Z→-Y → 손잡이를 XY 평면에서 XZ 평면(컵 측면)으로 세움
+cupHandle = Rotate([1, 0, 0], 90, cupHandle, false);
