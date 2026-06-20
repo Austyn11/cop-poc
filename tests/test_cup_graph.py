@@ -16,7 +16,7 @@ def _edge_set(dag, *, type, source=None, target=None):
 def test_tapered_body_defaults():
     dag = build_dag("tapered", None)
     initialize(dag)
-    assert dag.get("height") == 70.0
+    assert dag.get("height") == 90.0
     assert dag.get("outer_top_r") == 40.0
     assert dag.get("inner_top_r") == pytest.approx(40.0 - 3.0)
     assert dag.get("inner_bottom_r") == pytest.approx(29.0 - 3.0)
@@ -38,8 +38,8 @@ def test_tapered_no_handle_has_no_joint_nodes():
 def test_tapered_bspline_attach_z_defaults():
     dag = build_dag("tapered", "bspline")
     initialize(dag)
-    assert dag.get("lower_attach_z") == pytest.approx(12.6)
-    assert dag.get("upper_attach_z") == pytest.approx(56.0)
+    assert dag.get("lower_attach_z") == pytest.approx(16.2)
+    assert dag.get("upper_attach_z") == pytest.approx(72.0)
 
 
 def test_tapered_bspline_attach_z_is_user_facing():
@@ -52,8 +52,8 @@ def test_tapered_bspline_attach_z_is_user_facing():
 def test_tapered_bspline_lower_outer_r():
     dag = build_dag("tapered", "bspline")
     initialize(dag)
-    lz = dag.get("lower_attach_z")  # 12.6
-    bot, top, h = 29.0, 40.0, 70.0
+    lz = dag.get("lower_attach_z")  # 16.2
+    bot, top, h = 29.0, 40.0, 90.0
     expected = bot + (top - bot) * (lz / h)
     assert dag.get("lower_outer_r") == pytest.approx(expected)
 

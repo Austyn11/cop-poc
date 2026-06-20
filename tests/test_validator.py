@@ -33,10 +33,10 @@ def test_no_violations_on_simultaneous_valid_change():
 # ── attach_z_order: lower_attach_z < upper_attach_z ──────────
 
 def test_lower_attach_z_above_upper_violates():
-    """lower_attach_z를 upper_attach_z(56) 이상으로 올리면 위반."""
+    """lower_attach_z를 upper_attach_z(72) 이상으로 올리면 위반."""
     dag = build_dag("tapered", "bspline")
     initialize(dag)
-    violations = check_constraints(dag, {"lower_attach_z": 60.0})
+    violations = check_constraints(dag, {"lower_attach_z": 80.0})
     assert "attach_z_order" in _violation_ids(violations)
 
 
@@ -51,10 +51,10 @@ def test_upper_attach_z_below_lower_violates():
 # ── attach_within_body: upper_attach_z < height ──────────────
 
 def test_upper_attach_z_above_height_violates():
-    """upper_attach_z를 height(70) 이상으로 올리면 위반."""
+    """upper_attach_z를 height(90) 이상으로 올리면 위반."""
     dag = build_dag("tapered", "bspline")
     initialize(dag)
-    violations = check_constraints(dag, {"upper_attach_z": 80.0})
+    violations = check_constraints(dag, {"upper_attach_z": 95.0})
     assert "attach_within_body" in _violation_ids(violations)
 
 

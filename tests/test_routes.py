@@ -94,7 +94,7 @@ def test_create_graph_node_structure():
         resp = client.post("/api/generate", json={"command": "컵 만들어줘"})
     body_nodes = resp.json()["graph"]["body"]
     height_node = next(n for n in body_nodes if n["name"] == "height")
-    assert height_node["value"] == pytest.approx(70.0)
+    assert height_node["value"] == pytest.approx(90.0)
     assert height_node["user_facing"] is True
     inner_top = next(n for n in body_nodes if n["name"] == "inner_top_r")
     assert inner_top["user_facing"] is False
