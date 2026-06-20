@@ -7,7 +7,7 @@ class GraphRetriever:
 
     def _build_nodes(self, dag: DAG) -> dict:
         result = {}
-        for name, node in dag._nodes.items():
+        for name, node in dag.nodes().items():
             result[name] = {
                 "value": node.value,
                 "subgraph": node.subgraph,
@@ -22,11 +22,11 @@ class GraphRetriever:
         return [e.target for e in dag.get_edges(type="CONTROLS", source=name)]
 
     def _get_constraints(self, dag: DAG, name: str) -> list[str]:
-        return [
-            e.properties["rule"]
-            for e in dag.get_edges(type="CONSTRAINS", target=name)
-            if "rule" in e.properties
-        ]
+        seen: dict[str, None] = {}
+        for e in dag.get_edges(type="CONSTRAINS", target=name):
+            if "rule" in e.properties:
+                seen[e.properties["rule"]] = None
+        return list(seen)
 
     def _get_affects(self, dag: DAG, name: str) -> list[str]:
         return [e.target for e in dag.get_edges(type="AFFECTS_GEOMETRY", source=name)]

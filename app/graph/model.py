@@ -60,3 +60,7 @@ class DAG:
 
     def get_user_facing(self) -> dict[str, float]:
         return {name: node.value for name, node in self._nodes.items() if node.is_user_facing}
+
+    def nodes(self) -> dict[str, "ParamNode"]:
+        """모든 노드를 {name: ParamNode} 사전으로 반환 (복사본)."""
+        return dict(self._nodes)

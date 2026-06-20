@@ -26,7 +26,7 @@ def test_retrieve_returns_nodes_key(dag_tapered_bspline):
 def test_retrieve_contains_all_dag_nodes(dag_tapered_bspline):
     context = GraphRetriever().retrieve(dag_tapered_bspline)
     nodes = context["nodes"]
-    for name in dag_tapered_bspline._nodes:
+    for name in dag_tapered_bspline.nodes():
         assert name in nodes, f"Missing node: {name}"
 
 
