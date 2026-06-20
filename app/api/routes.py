@@ -84,7 +84,10 @@ def generate(req: GenerateRequest):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     graph_context = _retriever.retrieve(dag)
-    parsed = parse_command(req.command, graph_context, selection)
+    try:
+        parsed = parse_command(req.command, graph_context, selection)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM parse error: {e}")
     intent = parsed.get("intent", "modify")
 
     if intent == "create":
@@ -135,6 +138,7 @@ def generate(req: GenerateRequest):
         )
 
     # intent == "modify"
+    # 적용 예정 값 계산 (아직 DAG에 반영 안 함)
     proposed: dict[str, float] = {}
     for change in parsed.get("changes", []):
         param = change.get("param")
@@ -145,6 +149,7 @@ def generate(req: GenerateRequest):
                 dag.get(param) + float(value) if op == "delta" else float(value)
             )
 
+    # 제약 위반 검사 — 위반 시 현재 상태 그대로 반환
     violations = check_constraints(dag, proposed)
     if violations:
         code = render(state.body_template, state.handle_template, dag, state.post_processing)
@@ -159,6 +164,7 @@ def generate(req: GenerateRequest):
             message="오류가 발생했습니다.\n" + "\n".join(f"- {d}" for d in descriptions),
         )
 
+    # 위반 없음 — DAG 업데이트 및 재계산
     changed_names = list(proposed.keys())
     for param, new_value in proposed.items():
         dag.set(param, new_value)
