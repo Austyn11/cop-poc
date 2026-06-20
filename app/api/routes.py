@@ -1,3 +1,4 @@
+# app/api/routes.py
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -6,11 +7,13 @@ from app.graph.solver import initialize, recompute
 from app.graph.validator import check_constraints
 from app.codegen.renderer import render
 from app.llm.parser import parse_command
+from app.llm.graph_retriever import GraphRetriever
 
 router = APIRouter(prefix="/api")
 
 _DEFAULT_BODY = "tapered"
 _DEFAULT_HANDLE = "bspline"
+_retriever = GraphRetriever()
 
 
 class ModelState(BaseModel):
@@ -75,7 +78,13 @@ def generate(req: GenerateRequest):
     state = req.state or ModelState(body_template=_DEFAULT_BODY, handle_template=_DEFAULT_HANDLE)
     selection = req.selection.model_dump() if req.selection else None
 
-    parsed = parse_command(req.command, state.params, selection)
+    # 현재 state로 DAG 빌드 → graph context 추출 → LLM 호출
+    try:
+        dag = _build_and_init(state.body_template, state.handle_template, state.params)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    graph_context = _retriever.retrieve(dag)
+    parsed = parse_command(req.command, graph_context, selection)
     intent = parsed.get("intent", "modify")
 
     if intent == "create":
@@ -110,10 +119,6 @@ def generate(req: GenerateRequest):
                 "index": req.selection.index,
                 "radius": radius,
             })
-        try:
-            dag = _build_and_init(state.body_template, state.handle_template, state.params)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
         code = render(state.body_template, state.handle_template, dag, post_processing)
         return GenerateResponse(
             code=code,
@@ -130,12 +135,6 @@ def generate(req: GenerateRequest):
         )
 
     # intent == "modify"
-    try:
-        dag = _build_and_init(state.body_template, state.handle_template, state.params)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    # 적용 예정 값 계산 (아직 DAG에 반영 안 함)
     proposed: dict[str, float] = {}
     for change in parsed.get("changes", []):
         param = change.get("param")
@@ -146,7 +145,6 @@ def generate(req: GenerateRequest):
                 dag.get(param) + float(value) if op == "delta" else float(value)
             )
 
-    # 제약 위반 검사 — 위반 시 현재 상태 그대로 반환
     violations = check_constraints(dag, proposed)
     if violations:
         code = render(state.body_template, state.handle_template, dag, state.post_processing)
@@ -161,7 +159,6 @@ def generate(req: GenerateRequest):
             message="오류가 발생했습니다.\n" + "\n".join(f"- {d}" for d in descriptions),
         )
 
-    # 위반 없음 — DAG 업데이트 및 재계산
     changed_names = list(proposed.keys())
     for param, new_value in proposed.items():
         dag.set(param, new_value)
