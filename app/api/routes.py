@@ -83,7 +83,7 @@ def generate(req: GenerateRequest):
         dag = _build_and_init(state.body_template, state.handle_template, state.params)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    graph_context = _retriever.retrieve(dag)
+    graph_context = _retriever.retrieve(dag, state.body_template, state.handle_template, selection)
     try:
         parsed = parse_command(req.command, graph_context, selection)
     except Exception as e:

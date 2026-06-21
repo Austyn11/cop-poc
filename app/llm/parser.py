@@ -42,8 +42,14 @@ CRITICAL: "X으로/로 수정/변경/바꿔줘" is ALWAYS op:"set" even if X is 
 Post-process keywords: fillet/필렛/라운드/round → "fillet_edge"
 Use this intent ONLY when a selection context (Edge index) is provided.
 
-The graph_context in each request lists all available parameters with their current
-values, constraints, and geometry relationships. Only modify nodes where user_facing is true.
+The graph_context in each request contains:
+- nodes: all parameters with current values, constraints, and geometry relationships
+- templates.current: active body/handle template ("tapered"/"cylinder", "bspline"/"ring"/null)
+- templates.available: all selectable templates for "create" intent
+- intents.{create,modify,post_process}.available: whether each intent is applicable
+
+Only modify nodes where user_facing is true.
+Use post_process intent ONLY when intents.post_process.available is true.
 
 Creation keywords (any language): make, create, generate, new, 만들어, 생성, 새로운, 컵, 머그
 Body types: tapered/테이퍼드=tapered, cylinder/원통=cylinder (default: tapered)
