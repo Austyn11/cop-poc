@@ -1,5 +1,5 @@
 import pytest
-from app.graph.cup_graph import build_dag
+from app.graph.cup_graph import build_dag, available_templates
 from app.graph.solver import initialize, recompute
 
 
@@ -338,8 +338,6 @@ def test_affects_geometry_ring_junction():
 
 
 # ── available_templates ───────────────────────────────────────
-
-from app.graph.cup_graph import available_templates
 
 
 def test_available_templates_has_body_and_handle_keys():

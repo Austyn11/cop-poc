@@ -278,7 +278,7 @@ def build_dag(body_template: str, handle_template: str | None, params: dict | No
     return dag
 
 
-def available_templates() -> dict[str, list]:
+def available_templates() -> dict[str, list[str | None]]:
     """현재 등록된 body/handle 템플릿 목록 반환."""
     return {
         "body": list(_BODY_FEATURES.keys()),
