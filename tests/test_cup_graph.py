@@ -335,3 +335,27 @@ def test_affects_geometry_ring_junction():
     dag = build_dag("cylinder", "ring")
     sources = _edge_set(dag, type="AFFECTS_GEOMETRY", target="Edge:ring_junction")
     assert "ring_attach_z" in sources
+
+
+# ── available_templates ───────────────────────────────────────
+
+from app.graph.cup_graph import available_templates
+
+
+def test_available_templates_has_body_and_handle_keys():
+    avail = available_templates()
+    assert "body" in avail
+    assert "handle" in avail
+
+
+def test_available_templates_body_contains_known_types():
+    avail = available_templates()
+    assert "tapered" in avail["body"]
+    assert "cylinder" in avail["body"]
+
+
+def test_available_templates_handle_contains_known_types_and_none():
+    avail = available_templates()
+    assert "bspline" in avail["handle"]
+    assert "ring" in avail["handle"]
+    assert None in avail["handle"]

@@ -276,3 +276,11 @@ def build_dag(body_template: str, handle_template: str | None, params: dict | No
     _add_geometry_relations(dag, body_template, handle_template)
 
     return dag
+
+
+def available_templates() -> dict[str, list]:
+    """현재 등록된 body/handle 템플릿 목록 반환."""
+    return {
+        "body": list(_BODY_FEATURES.keys()),
+        "handle": list(_HANDLE_FEATURES.keys()) + [None],
+    }
