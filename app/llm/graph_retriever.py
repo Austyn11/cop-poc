@@ -18,7 +18,7 @@ class GraphRetriever:
 
     # ── nodes ────────────────────────────────────────────────────────────
 
-    def _build_nodes(self, dag: DAG) -> dict:
+    def _build_nodes(self, dag: DAG) -> dict[str, dict]:
         result = {}
         for name, node in dag.nodes().items():
             result[name] = {
@@ -46,7 +46,7 @@ class GraphRetriever:
 
     # ── templates ────────────────────────────────────────────────────────
 
-    def _build_templates(self, body_template: str, handle_template: str | None) -> dict:
+    def _build_templates(self, body_template: str, handle_template: str | None) -> dict[str, dict | list]:
         return {
             "current": {"body": body_template, "handle": handle_template},
             "available": _available_templates(),
@@ -54,7 +54,7 @@ class GraphRetriever:
 
     # ── intents ──────────────────────────────────────────────────────────
 
-    def _build_intents(self, selection: dict | None) -> dict:
+    def _build_intents(self, selection: dict | None) -> dict[str, dict]:
         return {
             "create": {
                 "available": True,
