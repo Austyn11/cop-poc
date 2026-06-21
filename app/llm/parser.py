@@ -44,9 +44,11 @@ Use this intent ONLY when a selection context (Edge index) is provided.
 
 The graph_context in each request contains:
 - nodes: all parameters with current values, constraints, and geometry relationships
-- templates.current: active body/handle template ("tapered"/"cylinder", "bspline"/"ring"/null)
-- templates.available: all selectable templates for "create" intent
-- intents.{create,modify,post_process}.available: whether each intent is applicable
+- templates.current: {"body": "<active body template>", "handle": "<active handle template or null>"}
+- templates.available: {"body": ["tapered","cylinder"], "handle": ["bspline","ring",null]}
+- intents.create.available: always true
+- intents.modify.available: always true
+- intents.post_process.available: true only when an Edge is selected
 
 Only modify nodes where user_facing is true.
 Use post_process intent ONLY when intents.post_process.available is true.
